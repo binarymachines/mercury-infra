@@ -17,12 +17,26 @@ resource "aws_key_pair" "instance_key" {
   public_key = "${lookup(var.keyring, var.ssh_keyname)}"
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "elasticsearch_cluster" {
+  count = "${var.elasticsearch_cluster_size}"
+  base_name = "mx_elasticsearch_apollo"  # TODO: factor out the project name
   ami = "${lookup(var.amis, "elasticsearch")}"
-  instance_type = "t1.micro"
+  instance_type = "${lookup(var.instance_types. "elasticsearch")}"
   tags {
-    Name = "${var.machine_name}"
+    Name = "${base_name}_${count.index}"
   }
   key_name = "keypair_1"
 }
 
+resource "aws_instance" "couchbase_cluster" {
+  count = "${var.couchbase_cluster_size}"
+  base_name = "mx_couchbase_apollo"   # TODO: factor out the project name
+  ami = "${lookup(var.amis, "elasticsearch")}"
+  instance_type = "${lookup(var.instance_types. "elasticsearch")}"
+  tags {
+    Name = "${base_name}_${count.index}"
+  }
+  key_name = "keypair_1"
+
+
+}
