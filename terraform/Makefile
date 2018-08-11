@@ -9,6 +9,8 @@ clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
+	find . -name 'credentials.tf' -exec rm -f {} +
+	find . -name 'streams.tf'  -exec rm -f {} +
 
 
 install-deps:
@@ -20,4 +22,8 @@ credentials:
 
 
 core:
-	pipenv run ./cstream.py  
+	pipenv run ./mkstream.py -o streams.tf
+
+
+pipeline: credentials core
+	echo "making a pipeline"
