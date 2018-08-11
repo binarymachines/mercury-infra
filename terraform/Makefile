@@ -19,3 +19,5 @@ credentials:
 	pipenv run ./credit.py -t ssh --dir=~/.ssh -g > credentials.tf
 
 
+core:
+	pipenv run ./cstream.py  
