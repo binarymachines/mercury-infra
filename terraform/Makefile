@@ -27,9 +27,11 @@ credentials:
 	pipenv run ./credit.py -t ssh --dir=~/.ssh -g > project_credentials.tf
 
 
-core:
+streams:
 	pipenv run ./mkstream.py --project=apollo -o project_streams.tf
 
 
-pipeline: project credentials core
-	echo "making a pipeline"
+
+pipeline: project credentials streams
+	terraform validate
+	terraform plan

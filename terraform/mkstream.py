@@ -194,17 +194,22 @@ class MakeStreamCLI(Cmd):
         '''
 
         if not len(self.stream_specs):
-            print('No Kinesis streams defined.')
-            return
+            should_save = cli.InputPrompt('No Kinesis streams defined. Are you sure (Y/n)?', 'y').show()
+            if should_save != 'y':
+                print('\nCancelling save.\n')
+                return
 
         if os.path.isfile(self.output_file):
             print('designated output file already exists.')
             return
-        
-        j2env = jinja2.Environment()
-        template_mgr = common.JinjaTemplateManager(j2env)        
-        streamdef_template = j2env.from_string(KINESIS_STREAM_TEMPLATE)
-        output_data = streamdef_template.render(streams=self.stream_specs)
+
+        if not len(self.stream_specs):
+            output_data = '# Intentionally empty file. No Kinesis streams defined for project %s.'% self.project_name
+        else:
+            j2env = jinja2.Environment()
+            template_mgr = common.JinjaTemplateManager(j2env)        
+            streamdef_template = j2env.from_string(KINESIS_STREAM_TEMPLATE)
+            output_data = streamdef_template.render(streams=self.stream_specs)
 
         with open(self.output_file, 'w') as f:
             f.write(output_data)
