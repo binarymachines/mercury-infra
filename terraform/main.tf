@@ -11,6 +11,18 @@ variable "elasticsearch_cluster_size" {}
 
 variable "couchbase_cluster_size" {}
 
+variable "region" {
+	 default = "us-east-1"
+}
+
+variable "credentials_file" {
+         default = "~/.ssh/aws_credentials"
+}
+
+variable "profile" {
+         default = "terraform"
+}
+
 
 provider "aws" {
   region                  = "${var.region}"
@@ -39,7 +51,7 @@ resource "aws_s3_bucket" "ingest_bucket" {
   acl = "authenticated-read"
 }
 
-
+/*
 resource "aws_s3_bucket" "encrypted_ingest_bucket" {
   bucket = "${var.ingest_bucket_name}"
   acl = "authenticated-read"
@@ -52,6 +64,7 @@ resource "aws_s3_bucket" "encrypted_ingest_bucket" {
     }
   }
 }
+*/
 
 resource "aws_instance" "elasticsearch_cluster" {
   count = "${var.elasticsearch_cluster_size}"

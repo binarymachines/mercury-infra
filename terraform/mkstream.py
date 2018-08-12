@@ -232,7 +232,9 @@ def main(args):
     prompt = MakeStreamCLI('mkstream',
                            project_name=args['--project'],
                            output_file=args['<output_terraform_file>'])
-    prompt.cmdloop('Welcome to the mkstream interactive shell. Type help or ? to list commands.')
+    prompt.cmdloop('''Welcome to the mkstream interactive shell.
+    Type "new" to create a new Kinesis stream configuration.
+    Type "help" or "?" to list commands.''')
 
 
 if __name__ == '__main__':

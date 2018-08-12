@@ -20,7 +20,7 @@ install-deps:
 
 
 project:
-	pipenv run ./mkproject.py --name=apollo -o project_settings.tf
+	pipenv run ./mkproject.py --project=apollo -o project_settings.tf
 
 
 credentials:
