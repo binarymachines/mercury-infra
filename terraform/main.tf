@@ -1,4 +1,5 @@
 
+/*
 variable "project_name" {}
 
 variable "machine_name" {}
@@ -22,7 +23,7 @@ variable "credentials_file" {
 variable "profile" {
          default = "terraform"
 }
-
+*/
 
 provider "aws" {
   region                  = "${var.region}"
