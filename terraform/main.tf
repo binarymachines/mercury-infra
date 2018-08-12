@@ -1,7 +1,16 @@
 
+variable "project_name" {}
+
 variable "machine_name" {}
 
 variable "ssh_keyname" {}
+
+variable "ingest_bucket_name" {}
+
+variable "elasticsearch_cluster_size" {}
+
+variable "couchbase_cluster_size" {}
+
 
 provider "aws" {
   region                  = "${var.region}"
@@ -44,12 +53,11 @@ resource "aws_s3_bucket" "encrypted_ingest_bucket" {
   }
 }
 
-
 resource "aws_instance" "elasticsearch_cluster" {
   count = "${var.elasticsearch_cluster_size}"
   base_name = "mx_elasticsearch_apollo"  # TODO: factor out the project name
   ami = "${lookup(var.amis, "elasticsearch")}"
-  instance_type = "${lookup(var.instance_types. "elasticsearch")}"
+  instance_type = "${lookup(var.instance_types, "elasticsearch")}"
   tags {
     Name = "${base_name}_${count.index}"
   }
@@ -61,7 +69,7 @@ resource "aws_instance" "couchbase_cluster" {
   count = "${var.couchbase_cluster_size}"
   base_name = "mx_couchbase_apollo"   # TODO: factor out the project name
   ami = "${lookup(var.amis, "elasticsearch")}"
-  instance_type = "${lookup(var.instance_types. "elasticsearch")}"
+  instance_type = "${lookup(var.instance_types, "couchbase")}"
   tags {
     Name = "${base_name}_${count.index}"
   }

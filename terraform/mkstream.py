@@ -2,7 +2,7 @@
 
 '''
 Usage:     
-    mkstream.py -o <output_terraform_file>
+    mkstream.py --project=<project_name> -o <output_terraform_file>
 
 Options:
     -o --output
@@ -25,11 +25,9 @@ resource "aws_kinesis_stream" "{{ stream.tf_resource_name }}" {
   name = "{{ stream.name }}"
   shard_count = {{ stream.shard_count }}
   retention_period = {{ stream.retention_period_hours }}
-
   tags {
       Name = "{{ stream.name }}"
   }
-
   shard_level_metrics = [
     {{ stream.formatted_shard_metrics_list }}
   ]
@@ -40,6 +38,7 @@ resource "aws_kinesis_stream" "{{ stream.tf_resource_name }}" {
 
 {% endfor %}
 '''
+
 
 
 class StreamSpec(object):
@@ -65,6 +64,7 @@ class StreamSpec(object):
     @property
     def compiled_stream_metrics_list(self):
         return ',\n'.join(self.stream_metrics)
+
 
 
 def docopt_cmd(func):
@@ -121,7 +121,7 @@ class mandatory_input(ContextDecorator):
             num_retries += 1
         
         if not self.data:
-            raise MissingInputException(failure_message)
+            raise MissingInput(failure_message)
 
 
     def __enter__(self):
@@ -134,18 +134,21 @@ class mandatory_input(ContextDecorator):
 
 class MakeStreamCLI(Cmd):
     def __init__(self, app_name='mkstream', **kwargs):
-        kwreader = common.KeywordArgReader('output_file')
+        kwreader = common.KeywordArgReader('project_name', 'output_file')
         kwreader.read(**kwargs)
         self.output_file = kwreader.get_value('output_file')
+        self.project_name = kwreader.get_value('project_name')
         self.name = app_name
         Cmd.__init__(self)
-        self.prompt = '%s> ' % self.name
+        self.prompt = '%s [%s] > ' % (self.name, self.project_name)
         self.stream_specs = []
         _ = os.system('clear')
+        #self.do_new({})
 
 
     def do_new(self, cmd_args):
-
+        '''Creates a new Kinesis stream spec for generating a Terraform file.
+        '''
         abort_message = 'cancelling stream creation.'
         try:
             stream_name = None
@@ -167,19 +170,28 @@ class MakeStreamCLI(Cmd):
 
             shard_count = cli.InputPrompt('shard count', '1').show()
             retention_period = cli.InputPrompt('data retention period in hours', '24').show()
-
             stream_spec = StreamSpec(stream_name, resource_name, shard_count, retention_period)
-
             self.stream_specs.append(stream_spec)
 
-
         except MissingInput as err:
-            print(err.message)
+            print(err)
             return
 
+        
+    def do_show(self, cmd_args):
+        '''Shows the created Kinesis stream specs.
+        '''
+
+        j2env = jinja2.Environment()
+        template_mgr = common.JinjaTemplateManager(j2env)        
+        streamdef_template = j2env.from_string(KINESIS_STREAM_TEMPLATE)
+        output_data = streamdef_template.render(streams=self.stream_specs)
+        print(output_data)
+        
 
     def do_save(self, cmd_args):
-        '''Saves all created Kinesis stream resources to the designated output .tf file.'''
+        '''Saves all created Kinesis stream specs to the designated output .tf file.
+        '''
 
         if not len(self.stream_specs):
             print('No Kinesis streams defined.')
@@ -199,11 +211,23 @@ class MakeStreamCLI(Cmd):
 
         print('\nSaved Terraform resources to output file %s.\n' % self.output_file)
 
+        
+    def do_quit(self, cmd_args):
+        '''Exits the mkstream environment'''
+        raise SystemExit
+
+    
+    def do_q(self, cmd_args):
+        '''Exits the mkstream environment'''
+        self.do_quit(cmd_args)
+        
 
 def main(args):
     #print(common.jsonpretty(args))
-    prompt = MakeStreamCLI('mkstream', output_file=args['<output_terraform_file>'])
-    prompt.cmdloop('starting mkstream in interactive mode...')
+    prompt = MakeStreamCLI('mkstream',
+                           project_name=args['--project'],
+                           output_file=args['<output_terraform_file>'])
+    prompt.cmdloop('Welcome to the mkstream interactive shell. Type help or ? to list commands.')
 
 
 if __name__ == '__main__':
