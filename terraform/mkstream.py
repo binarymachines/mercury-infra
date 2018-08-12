@@ -31,9 +31,6 @@ resource "aws_kinesis_stream" "{{ stream.tf_resource_name }}" {
   shard_level_metrics = [
     {{ stream.formatted_shard_metrics_list }}
   ]
-  stream_level_metrics = [
-      {{ stream.formatted_stream_metrics_list }}
-  ]
 }
 
 {% endfor %}

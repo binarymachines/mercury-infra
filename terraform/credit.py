@@ -12,6 +12,7 @@ Options:
 
 
 import os
+import json
 from collections import namedtuple
 import jinja2
 import docopt
@@ -70,7 +71,7 @@ def main(args):
     key_table = {}
     index = 0
     for kfile in keyfiles:
-        label = 'public_%s' % kfile[0:-4]
+        label = kfile[0:-4]
         key_table[label] = kfile
         index += 1
 
@@ -80,8 +81,12 @@ def main(args):
         keypair_records.append(KeypairRecord(name=label, public_key=key))
 
     print(keyring_varfile_template.render(keypairs=keypair_records))
-                               
 
+    with open('keyfiles.json', 'w') as f:
+        keymap = {}
+        keymap['location'] = keyfile_dir
+        keymap['public_keys'] = key_data
+        f.write(json.dumps(keymap))
 
     #print(common.jsonpretty(key_data))
                                

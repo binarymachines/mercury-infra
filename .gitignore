@@ -3,3 +3,6 @@
 *.tfstate.backup
 *.log
 *.pyc
+project_*.tf
+terraform/keyfiles.json
+.terraform
