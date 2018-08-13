@@ -28,13 +28,14 @@ mercury-infra requires:
 * Pipenv for dependency management
 * a working Terraform install
 * a valid set of AWS credentials (a secret access key and an access key ID)
-Note that the credentials **must** be associated with an IAM user having sufficient privileges to create every resource type supported by mercury-infra, otherwise the terraform plan / execute step will fail.
+
+--Note that the credentials **must** be associated with an IAM user having sufficient privileges to create every resource type supported by mercury-infra, otherwise the terraform plan / execute step will fail.
 
 mercury-infra has as yet only been tested in a UNIX environment. Behavior under the Windows Powershell is undefined.
 
 Usage
 -------------
-To construct a pipeline using mercury-infra, ensure that your AWS credentials are present as environment variables. Clone the repo into a local directory, then cd into < mercury-infra directory >/terraform. Inspect the Makefile and ensure that in the credentials make target, the `--dir` paramter points to a directory housing a valid SSH keypair. (NOTE: this will be parameterized in a later build.)
+To construct a pipeline using mercury-infra, ensure that your AWS credentials are present as environment variables. Clone the repo into a local directory, then cd into < mercury-infra directory >/terraform. Inspect the Makefile and ensure that in the credentials make target, the `--dir` parameter points to a directory housing a valid SSH keypair. (NOTE: this will be parameterized in a later build.)
 
 Then, at the command prompt, issue
 
