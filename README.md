@@ -35,7 +35,7 @@ mercury-infra has as yet only been tested in a UNIX environment. Behavior under 
 
 Usage
 -------------
-To construct a pipeline using mercury-infra, ensure that your AWS credentials are present as environment variables. Clone the repo into a local directory, then cd into < mercury-infra directory >/terraform. Inspect the Makefile and ensure that in the credentials make target, the `--dir` parameter points to a directory housing a valid SSH keypair. (NOTE: this will be parameterized in a later build.)
+To construct a pipeline using mercury-infra, ensure that your AWS credentials are present as environment variables. Clone the repo into a local directory, then cd into < mercury-infra directory >/terraform. Inspect the Makefile and ensure that in the `credentials` make target, the `--dir` parameter points to a directory housing a valid SSH keypair. (NOTE: this will be parameterized in a later build.)
 
 Then, at the command prompt, issue
 
