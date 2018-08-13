@@ -57,7 +57,7 @@ Next Steps
 
 Ansible is a more fine-grained tool for provisioning -- among other types -- AWS resources such as EC2 instances. Future builds will integrate parameterized Ansible scripts from the *warp* repo to automate as much as possible of the pipeline setup process, enabling users to rapidly prototype and experiment with data pipelines without tedious manual setup and teardown.
 
-Additionally, the machine types available in mercury-infra are limited to those types compatible with EC2-Classic. Support for t2 and  instance types (which require VPC provisioning), as well as non-EC2 resource types, is under development.
+Additionally, the machine types available in mercury-infra are currently limited to those types compatible with EC2-Classic. Support for t2 and  instance types (which require VPC provisioning), as well as non-EC2 resource types, is under development.
 
 
 mercury-infra and its sister repository mercury are free and open-source software from [Binarymachines LLC](https://www.binarymachines.io).
