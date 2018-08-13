@@ -16,10 +16,10 @@ variable "instance_types" {
 	 type = "map"
 	 description = "AWS instance types for pipeline node types"
 	 default = {
-	 	 elasticsearch	= "t2.small"
-		 couchbase	= "t2.small"
-		 redis		= "t2.micro"
-		 postgres	= "t2.small"
+	 	 elasticsearch	= "t1.micro"
+		 couchbase	= "t1.micro"
+		 redis		= "t1.micro"
+		 postgres	= "t1.micro"
 	 }
 }
 
