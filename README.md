@@ -1,5 +1,5 @@
 # mercury-infra
-Terraform and Ansible files for data pipeline infrastructure
+**Terraform and Ansible files for data pipeline infrastructure**
 
 This repo contains:
 
