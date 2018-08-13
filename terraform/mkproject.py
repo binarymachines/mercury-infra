@@ -10,6 +10,7 @@ Options:
 
 
 import os
+import json
 from collections import namedtuple
 from cmd import Cmd
 from contextlib import ContextDecorator
@@ -44,12 +45,18 @@ variable "credentials_file" {
 variable "profile" {
         default = "terraform"
 }
+
 '''
 
 TerraformVarSpec = namedtuple('TerraformVarSpec', 'name value')
 
+
 class MakeProjectCLI(Cmd):
     def __init__(self, app_name='mkproject', **kwargs):
+
+        if not os.path.isfile('keyfiles.json'):
+            raise Exception('The file "keyfiles.json" was not found. Please run mkcreds.py to generate and save a keyset.')
+
         kwreader = common.KeywordArgReader('project_name', 'output_file')
         kwreader.read(**kwargs)
         self.name = app_name
@@ -63,6 +70,14 @@ class MakeProjectCLI(Cmd):
         self.prompt = '%s [%s] > ' % (self.name, self.project_name)
         _ = os.system('clear')
         
+
+    def generate_key_options(self, keyset_dict):
+        options = []
+        for key in keyset_dict['public_keys']:
+            options.append({'label': key, 'value': key})
+        return options
+
+
 
     def get_bucket_name(self):
         should_create = cli.InputPrompt('Create S3 bucket for file ingest (Y/n)?', 'y').show()
@@ -88,6 +103,13 @@ class MakeProjectCLI(Cmd):
         return int(cluster_size)
 
     
+    def select_ssh_key(self, keyset_dict):
+        print('\n____ SSH keys in target directory %s:\n' % keyset_dict['location'])
+        key_options = self.generate_key_options(keyset_dict)
+        key_selection = cli.MenuPrompt('SSH keypair', key_options).show()
+        return key_selection
+
+
     def do_setup(self, cmd_args):
         '''Creates the required settings for Terraforming a pipeline project.
         '''
@@ -104,6 +126,13 @@ class MakeProjectCLI(Cmd):
         cb_cluster_size = self.get_couchbase_cluster_size()
         self.project_var_specs.append(TerraformVarSpec(name='couchbase_cluster_size',
                                                        value=cb_cluster_size))
+
+        with open('keyfiles.json', 'r') as f:
+            keyset = json.loads(f.read())
+
+        ssh_key_name = self.select_ssh_key(keyset)
+        self.project_var_specs.append(TerraformVarSpec(name='ssh_keyname',
+                                                       value=ssh_key_name))
 
         print('+++ Project "%s" config vars created.' % self.project_name)
 

@@ -31,7 +31,6 @@ streams:
 	pipenv run ./mkstream.py --project=apollo -o project_streams.tf
 
 
-
-pipeline: project credentials streams
+pipeline: credentials project streams
 	terraform validate
 	terraform plan

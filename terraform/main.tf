@@ -1,7 +1,4 @@
 
-variable "ssh_keyname" {
-	 default = "sample_ec2_key"
-}
 
 provider "aws" {
   region                  = "${var.region}"
