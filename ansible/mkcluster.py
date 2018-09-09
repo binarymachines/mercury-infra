@@ -10,6 +10,7 @@ from snap import common
 from snap import cli_tools as cli
 from cmd import Cmd
 import docopt
+from docopt import docopt as docopt_func
 from docopt import DocoptExit
 
 INT_REGEX = r'[0-9]+$'
@@ -43,6 +44,7 @@ def docopt_cmd(func):
     fn.__doc__ = func.__doc__
     fn.__dict__.update(func.__dict__)
     return fn
+
 
 class constrained_input_value(ContextDecorator):
     def __init__(self, value_predicate_func, cli_prompt, **kwargs):
@@ -125,7 +127,6 @@ class mandatory_input(ContextDecorator):
         return False
 
 
-
 CouchbaseBucketSpec = namedtuple('CouchbaseBucketSpec', 'name type ram_quota num_replicas')
 
 BUCKET_TYPE_OPTIONS = [
@@ -146,8 +147,8 @@ class MakeClusterCLI(Cmd):
         self.name = app_name
         self.prompt = '%s > ' % (self.name)
         self.cluster_config = {
-			'buckets': []
-		}
+            'buckets': []
+        }
         _ = os.system('clear')
 
 
@@ -174,7 +175,7 @@ class MakeClusterCLI(Cmd):
             return input_result.data
 
 
-    def create_bucket(self):
+    def create_bucket(self):        
         bucket_name = None
         quota = None
         num_replicas = None
@@ -203,35 +204,90 @@ class MakeClusterCLI(Cmd):
                                    type=bucket_type,
                                    ram_quota=quota,
                                    num_replicas=num_replicas)
-        
 
+    @docopt_cmd
     def do_new(self, cmd_args):
-        admin_username = self.get_admin_username()
-        admin_password = self.get_admin_password()
-        cluster_ram_quota = self.get_cluster_ram_quota()
+        '''Usage:
+                new (cluster | bucket)
+        '''
 
-		self.cluster_config['admin_username'] = admin_username
-		self.cluster_config['admin_password'] = admin_password
-		self.cluster_config['cluster_ram_quota'] = cluster_ram_quota
+        if cmd_args['cluster']:
+            admin_username = self.get_admin_username()
+            admin_password = self.get_admin_password()
+            cluster_ram_quota = self.get_cluster_ram_quota()
 
-		print('\n+++ Couchbase cluster settings specified.\n')
-        buckets = []
+            self.cluster_config['admin_username'] = admin_username
+            self.cluster_config['admin_password'] = admin_password
+            self.cluster_config['cluster_ram_quota'] = cluster_ram_quota
 
-		should_add = cli.InputPrompt('Add bucket to cluster spec (Y/n)?').show()
-		if should_add == 'n':
-			return
+            print('\n+++ Couchbase cluster settings specified.\n')
+            buckets = []
 
-        while True:
+            should_add = cli.InputPrompt('Add bucket to cluster spec (Y/n)?').show()
+            if should_add == 'n':
+                return
+
+            while True:
+                bucket_spec = self.create_bucket()
+                if bucket_spec:
+                    self.cluster_config['buckets'].append(bucket_spec)
+                    print('\n+++added bucket "%s" to cluster config\n' % bucket_spec.name)                            
+                    should_continue = cli.InputPrompt('Create another bucket (Y/n)?', 'y').show()
+                    if should_continue == 'n':
+                        break
+            return
+
+        elif cmd_args['bucket']:
             bucket_spec = self.create_bucket()
-            if bucket_spec:
-                self.cluster_config['buckets'].append(bucket_spec)
-                print('\n+++added bucket "%s" to cluster config\n' % bucket_spec.name)
-                        
-            should_continue = cli.InputPrompt('Create another bucket (Y/n)?', 'y').show()
-            if should_continue == 'n':
-                break
+            while True:
+                if bucket_spec:
+                    self.cluster_config['buckets'].append(bucket_spec)
+                    print('\n+++added bucket "%s" to cluster config\n' % bucket_spec.name)
+                    should_continue = cli.InputPrompt('Create another bucket (Y/n)?', 'y').show()
+                    if should_continue == 'n':
+                        break
 
-    
+
+    def generate_bucket_options(self):
+        return [{'label': b.name, 'value': b.name} for b in self.cluster_config['buckets']]
+
+
+    def get_bucket_index_by_name(self, bucket_name):
+        index = 0
+        for b in self.cluster_config['buckets']:
+            if b.name == bucket_name:
+                break
+            index += 1
+
+        return index
+
+
+    @docopt_cmd
+    def do_delete(self, cmd_args):
+        '''Usage:
+                delete (cluster | bucket)
+        '''
+
+        if cmd_args['cluster']:
+            print('### This action will delete your cluster config and all bucket configurations.')
+            should_clear = cli.InputPrompt('Are you sure (y/N)', 'n').show()
+            if should_clear == 'y':
+                self.cluster_config = {}
+
+        elif cmd_args['bucket']:
+            if not len(self.cluster_config['buckets']):
+                print('\nNo bucket specs created.')
+                return
+
+            options = self.generate_bucket_options()
+            bucket_name = cli.MenuPrompt('Bucket to delete', options).show()
+            print('### This action will delete the bucket config "%s".' % bucket_name)
+            should_delete = cli.InputPrompt('Are you sure (y/N)', 'n').show()
+            if should_delete == 'y':
+                index = self.get_bucket_index_by_name(bucket_name)
+                self.cluster_config['buckets'].pop(index)
+
+
     def do_save(self, cmd_args):
         if not len(self.cluster_config['buckets']):
             print('A working couchbase cluster must have at least one bucket.')
