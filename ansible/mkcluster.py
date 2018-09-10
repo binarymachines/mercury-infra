@@ -289,23 +289,26 @@ class MakeClusterCLI(Cmd):
 
 
     def do_save(self, cmd_args):
-		if not self.cluster_config:
-			print('\n### No cluster configuration has been created.')
-			return
+        '''Save the couchbase cluster configuration to an Ansible playbook
+        '''
+        
+        if not self.cluster_config:
+            print('\n### No cluster configuration has been created.')
+            return
 
         if not len(self.cluster_config['buckets']):
             print('A working couchbase cluster must have at least one bucket.')
             should_create = cli.InputPrompt('Create bucket (Y/n?', 'y').show()
             if should_create == 'n':
-				return
+                return
             bucket_spec = self.create_bucket()
-			if bucket_spec:
-				self.cluster_config['buckets'].append(bucket_spec)
-			else:
-				return
+            if bucket_spec:
+                self.cluster_config['buckets'].append(bucket_spec)
+            else:
+                return
 
-		print(common.jsonpretty(self.cluster_config))
-			
+        print(common.jsonpretty(self.cluster_config))
+                        
 
 def main():
     cli_app = MakeClusterCLI()
