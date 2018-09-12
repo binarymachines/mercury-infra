@@ -35,25 +35,31 @@ COUCHBASE_ADD_NODE_SHELL_SCRIPT = '''
 /opt/couchbase/bin/couchbase-cli server-add -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password} \
 --server-add={{ node_address }}:{{ node_port }} \
 --server-add-username=${admin_user} --server-add-password=${admin_password} \
---services data, index, query 
+--services "data, index, query" 
 
+'''
+
+COUCHBASE_BUCKETS_ONLY_SHELL_SCRIPT = '''
+{% for bucket in cluster_spec.buckets %}
+/opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 \
+--bucket={{bucket.name}} \
+--bucket-type={{bucket.type}} \
+--bucket-ramsize={{bucket.ram_quota}}  \
+--bucket-replica={{bucket.num_replicas}} \
+-u {{cluster_spec.admin_username}} -p {{cluster_spec.admin_password}} \
+--wait
+{% endfor %}
 '''
 
 COUCHBASE_SETUP_SHELL_SCRIPT = '''
 #!/bin/bash
 
 /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091  \
---cluster-init-username={{cluster_spec.admin_username}} \
---cluster-init-password={{cluster_spec.admin_password}} \
---cluster-init-port=8091 \
---cluster-init-ramsize={{cluster_spec.cluster_ram_quota}} \
---services data, index, query
-{% for bucket in cluster_spec.buckets %}
-/opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 \
---bucket={{bucket.name}} \
---bucket-type={{bucket.type}} \
---bucket-port=11211 \
---bucket-ramsize={{bucket.ram_quota}}  \
---bucket-replica={{bucket.num_replicas}} -u {{cluster_spec.admin_user}} -p {{cluster_spec.admin_password}}
-{% endfor %}
-'''
+--cluster-username={{cluster_spec.admin_username}} \
+--cluster-password={{cluster_spec.admin_password}} \
+--cluster-port=8091 \
+--cluster-ramsize={{cluster_spec.cluster_ram_quota}} \
+--services "data, index, query"
+{bucket_segment}
+'''.format(bucket_segment=COUCHBASE_BUCKETS_ONLY_SHELL_SCRIPT)
+

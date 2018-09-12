@@ -137,7 +137,7 @@ CouchbaseBucketSpec = namedtuple('CouchbaseBucketSpec', 'name type ram_quota num
 
 BUCKET_TYPE_OPTIONS = [
     {'label': 'couchbase', 'value': 'couchbase'},
-    {'label': 'memcache', 'value': 'memcache'}
+    {'label': 'memcache', 'value': 'memcached'}
 ]
     
 
@@ -176,7 +176,7 @@ class MakeClusterCLI(Cmd):
 
     def get_cluster_ram_quota(self):
         with required_input_format(INT_REGEX,
-                                   cli.InputPrompt('cluster RAM quota'),
+                                   cli.InputPrompt('cluster RAM quota (GB)'),
                                    warning_message='cluster RAM quota must be an integer',
                                    failure_message='bad or missing cluster RAM quota') as input_result:
             return input_result.data
@@ -195,7 +195,7 @@ class MakeClusterCLI(Cmd):
         bucket_type = cli.MenuPrompt('bucket type', BUCKET_TYPE_OPTIONS).show()
 
         with required_input_format(INT_REGEX,
-                                   cli.InputPrompt('bucket RAM quota'),
+                                   cli.InputPrompt('bucket RAM quota (GB)'),
                                    warning_message='RAM quota must be a positive integer',
                                    failure_message='bad RAM quota value') as input_result:
             quota = input_result.data
@@ -215,7 +215,7 @@ class MakeClusterCLI(Cmd):
     @docopt_cmd
     def do_new(self, cmd_args):
         '''Usage:
-                new (cluster | bucket)
+                new (cluster | bucket | node)
         '''
 
         if cmd_args['cluster']:
@@ -295,14 +295,28 @@ class MakeClusterCLI(Cmd):
                 self.cluster_config['buckets'].pop(index)
 
 
-    def generate_script_name(self):
+    def generate_cluster_script_filename(self):
         return 'couchbase_%s_cluster_setup.sh' % self.project_name
 
+    def generate_bucket_script_filename(self):
+        return 'couchbase_%s_bucket_setup.sh' % self.project_name
+
+
+    def generate_addnode_script_filename(self):
+        return 'couchbase_%s_add_node.sh'
+
+
+    def do_quit(self, cmd_args):
+        return True
+
+    def do_q(self, cmd_args):
+        return self.do_quit(cmd_args)
 
     @docopt_cmd
     def do_save(self, cmd_args):
         '''Usage:
-                save (script | playbook)
+                save [cluster | buckets | nodes] as (script | playbook)
+                save config            
         '''
 
         if not self.cluster_config:
@@ -320,16 +334,29 @@ class MakeClusterCLI(Cmd):
             else:
                 return
 
+        j2env = jinja2.Environment()
+
+        if cmd_args['config']:
+            print('\n### Placeholder for save-to-YAML functionality\n')
+            return
+
         if cmd_args['script']:
-            script_name = self.generate_script_name()
-            j2env = jinja2.Environment()
-            template_mgr = common.JinjaTemplateManager(j2env)
-            script_template = j2env.from_string(templates.COUCHBASE_SETUP_SHELL_SCRIPT)
-            print(script_template.render(cluster_spec=self.cluster_config))
+            template_string = None
+            if cmd_args['cluster']:
+                template_string = templates.COUCHBASE_SETUP_SHELL_SCRIPT
+                script_filename = self.generate_cluster_script_filename()
+            elif cmd_args['buckets']:
+                template_string = '#!/bin/bash\n%s' % templates.COUCHBASE_BUCKETS_ONLY_SHELL_SCRIPT
+                script_filename = self.generate_bucket_script_filename()
+
+            script_template = j2env.from_string(template_string)
             
+            with open(script_filename, 'w+') as f:
+                f.write(script_template.render(cluster_spec=self.cluster_config))
+
+        if cmd_args['playbook']:
+            print('\n### Placeholder for save-to-Ansible-playbook functionality\n')
                         
-
-
 def main(args):
 
     project = args['<project_name>']

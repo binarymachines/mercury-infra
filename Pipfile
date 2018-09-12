@@ -4,9 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+pylint = "*"
 
 [requires]
-python_version = "3.5"
+python_version = ">=3.5"
 
 [packages]
 snap-micro = "*"
