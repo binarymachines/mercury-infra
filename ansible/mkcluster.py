@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 
+'''
+        Usage:    mkcluster <project_name>
+'''
+
 import os
 import json
 import re
@@ -9,9 +13,11 @@ from contextlib import ContextDecorator
 from snap import common
 from snap import cli_tools as cli
 from cmd import Cmd
+import jinja2
 import docopt
 from docopt import docopt as docopt_func
 from docopt import DocoptExit
+import templates
 
 INT_REGEX = r'[0-9]+$'
 
@@ -145,7 +151,8 @@ class MakeClusterCLI(Cmd):
     def __init__(self, app_name='mkcluster', **kwargs):
         Cmd.__init__(self)
         self.name = app_name
-        self.prompt = '%s > ' % (self.name)
+        self.project_name = kwargs['project_name']
+        self.prompt = '%s [%s]> ' % (self.name, self.project_name)
         self.cluster_config = {
             'buckets': []
         }
@@ -288,6 +295,11 @@ class MakeClusterCLI(Cmd):
                 self.cluster_config['buckets'].pop(index)
 
 
+    def generate_script_name(self):
+        return 'couchbase_%s_cluster_setup.sh' % self.project_name
+
+
+    @docopt_cmd
     def do_save(self, cmd_args):
         '''Usage:
                 save (script | playbook)
@@ -313,18 +325,22 @@ class MakeClusterCLI(Cmd):
             j2env = jinja2.Environment()
             template_mgr = common.JinjaTemplateManager(j2env)
             script_template = j2env.from_string(templates.COUCHBASE_SETUP_SHELL_SCRIPT)
-            print(script_template.render(self.cluster_config))
+            print(script_template.render(cluster_spec=self.cluster_config))
+            
                         
 
 
-def main():
-    cli_app = MakeClusterCLI()
+def main(args):
+
+    project = args['<project_name>']
+    cli_app = MakeClusterCLI(project_name=project)
     cli_app.cmdloop('''Welcome to the mkcluster interactive shell.
     Type "new" to provision a new Couchbase cluster against a virgin instance.
     Type "help" or "?" to list commands.''')
 
 
 if __name__ == '__main__':
-    main()
+    args = docopt.docopt(__doc__)    
+    main(args)
 
 
