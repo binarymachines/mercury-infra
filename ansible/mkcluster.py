@@ -289,9 +289,10 @@ class MakeClusterCLI(Cmd):
 
 
     def do_save(self, cmd_args):
-        '''Save the couchbase cluster configuration to an Ansible playbook
+        '''Usage:
+                save (script | playbook)
         '''
-        
+
         if not self.cluster_config:
             print('\n### No cluster configuration has been created.')
             return
@@ -307,8 +308,14 @@ class MakeClusterCLI(Cmd):
             else:
                 return
 
-        print(common.jsonpretty(self.cluster_config))
+        if cmd_args['script']:
+            script_name = self.generate_script_name()
+            j2env = jinja2.Environment()
+            template_mgr = common.JinjaTemplateManager(j2env)
+            script_template = j2env.from_string(templates.COUCHBASE_SETUP_SHELL_SCRIPT)
+            print(script_template.render(self.cluster_config))
                         
+
 
 def main():
     cli_app = MakeClusterCLI()

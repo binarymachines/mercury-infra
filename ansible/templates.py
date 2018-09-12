@@ -30,3 +30,23 @@ couchbase_setup_ansible_command = '''
 {% endfor %}  
 
 '''
+
+COUCHBASE_ADD_NODE_SHELL_SCRIPT = '''
+/opt/couchbase/bin/couchbase-cli server-add -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password} \
+--server-add={{ node_address }}:{{ node_port }} \
+--server-add-username=${admin_user} --server-add-password=${admin_password} \
+--services data, index, query 
+'''
+
+COUCHBASE_SETUP_SHELL_SCRIPT = '''
+#!/bin/bash
+
+/opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091  \
+--cluster-init-username={{cluster_spec.admin_username}} \
+--cluster-init-password={{cluster_spec.admin_password}} \
+--cluster-init-port=8091 \
+--cluster-init-ramsize={{cluster_spec.cluster_ram_quota}} 
+
+
+
+'''
