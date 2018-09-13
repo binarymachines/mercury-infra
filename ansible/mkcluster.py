@@ -353,6 +353,7 @@ class MakeClusterCLI(Cmd):
             
             with open(script_filename, 'w+') as f:
                 f.write(script_template.render(cluster_spec=self.cluster_config))
+                print('generated script %s.' % script_filename)
 
         if cmd_args['playbook']:
             print('\n### Placeholder for save-to-Ansible-playbook functionality\n')
