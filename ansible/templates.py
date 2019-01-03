@@ -60,6 +60,6 @@ COUCHBASE_SETUP_SHELL_SCRIPT = '''
 --cluster-port=8091 \
 --cluster-ramsize={{cluster_spec.cluster_ram_quota}} \
 --services "data, index, query"
-{bucket_segment}
-'''.format(bucket_segment=COUCHBASE_BUCKETS_ONLY_SHELL_SCRIPT)
+%s
+''' % COUCHBASE_BUCKETS_ONLY_SHELL_SCRIPT
 
