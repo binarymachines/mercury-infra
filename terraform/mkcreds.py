@@ -2,7 +2,7 @@
 
 '''
 Usage:     
-    credit.py -t (ssh | aws) --dir=<directory> (-l | -g)
+    mkcreds.py -t (ssh | aws) --dir=<directory> (-l | -g)
 
 Options:
     -t --type
@@ -37,7 +37,7 @@ KeypairRecord = namedtuple('KeypairRecord', 'name public_key')
 
 def find_keyfiles_in_dir(directory):    
     files = os.listdir(directory)
-    return [f for f in files if f.endswith('.pub')]
+    return [f for f in files if f.endswith('.pub') or f.endswith('.pem')]
 
 
 def load_keys(pubkey_table, directory):

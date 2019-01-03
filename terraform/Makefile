@@ -24,7 +24,7 @@ project:
 
 
 credentials:
-	pipenv run ./credit.py -t ssh --dir=~/.ssh -g > project_credentials.tf
+	pipenv run ./mkcreds.py -t ssh --dir=~/.ssh -g > project_credentials.tf
 
 
 streams:

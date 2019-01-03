@@ -9,7 +9,13 @@
 
   tasks:
   - name: Configure main node
-    shell: /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091  --cluster-init-username=${admin_user} --cluster-init-password=${admin_password} --cluster-init-port=8091 --cluster-init-ramsize=${cluster_ram_quota} 
+    shell: 
+      cmd: |
+      /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091
+      --cluster-init-username=${admin_user}
+      --cluster-init-password=${admin_password}
+      --cluster-init-port=8091
+      --cluster-init-ramsize=${cluster_ram_quota}
 
   - name: Create shell script for configuring main node
     action: template src=couchbase-add-node.j2 dest=/tmp/addnodes.sh mode=750
